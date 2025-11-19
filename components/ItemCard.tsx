@@ -10,10 +10,11 @@ interface ItemCardProps {
 }
 
 const ItemCard: React.FC<ItemCardProps> = ({ item, onClick, selected, disabled, size = 'md' }) => {
+  // Responsive sizes: smaller on mobile, larger on sm/md screens
   const sizeClasses = {
-    sm: 'w-12 h-12 text-xs',
-    md: 'w-20 h-20 text-sm',
-    lg: 'w-24 h-24 text-base',
+    sm: 'w-10 h-10 sm:w-12 sm:h-12 text-[10px] sm:text-xs',
+    md: 'w-14 h-14 sm:w-20 sm:h-20 text-xs sm:text-sm', 
+    lg: 'w-20 h-20 sm:w-24 sm:h-24 text-sm sm:text-base',
   };
 
   const baseClasses = `

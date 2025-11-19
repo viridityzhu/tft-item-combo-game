@@ -1,41 +1,20 @@
 <div align="center">
-<img width="1257" height="768" alt="image" src="https://github.com/user-attachments/assets/8f99b6de-3442-4689-bdc6-887770c4106e" />
+<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
 </div>
 
-# **金铲铲装备合成训练** Item Combo Game
+# Run and deploy your AI Studio app
 
-A fun web tool to help you practice **TFT item combinations**!
-## 🚀 Features
+This contains everything you need to run your app locally.
 
-* **Item Combo Practice**: Mix and match components to make awesome items! ⚔️
-* **Track Your Stats**: See your score, streaks, and combo accuracy! 📊
-* **Easy Interface**: Choose items with simple clicks, no hassle. 🎮
+View your app in AI Studio: https://ai.studio/apps/drive/1UMdUcNOTppAG7jMtng4CNEUPe6PPT3BX
 
-## 🔥 Demo
-
-[Demo Page](https://service-152576204694.us-west1.run.app)
-
-## 🏁 Run Locally
+## Run Locally
 
 **Prerequisites:**  Node.js
 
-1. Clone the repo:
 
-   ```bash
-   git clone https://github.com/your-username/item-trainer.git
-   cd item-trainer
-   ```
-
-2. Install dependencies:
-
-   ```bash
-   npm install
-   ```
-
-3. Run the dev server:
-
-   ```bash
-   npm run dev
-   ```
-
-4. Visit [http://localhost:3000](http://localhost:3000) in your browser and start practicing! 😎
+1. Install dependencies:
+   `npm install`
+2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
+3. Run the app:
+   `npm run dev`

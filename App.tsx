@@ -11,16 +11,16 @@ import { getCoachFeedback } from './services/geminiService';
 const MainMenu = ({ onStart }: { onStart: () => void }) => (
   <div className="flex flex-col items-center justify-center h-full space-y-8 animate-fade-in p-4 text-center w-full max-w-2xl mx-auto">
     <div className="space-y-2">
-      <h1 className="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 drop-shadow-sm">
+      <h1 className="text-4xl sm:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 drop-shadow-sm">
         装备锻造坊
       </h1>
       <p className="text-slate-400 text-lg">掌握金铲铲合成配方</p>
     </div>
     
-    <div className="grid grid-cols-2 gap-4 max-w-xs w-full">
+    <div className="grid grid-cols-1 gap-4 w-full max-w-xs">
       <button 
         onClick={(e) => { e.stopPropagation(); onStart(); }}
-        className="col-span-2 group relative px-8 py-4 bg-slate-800 hover:bg-slate-700 rounded-xl border border-slate-600 transition-all hover:shadow-[0_0_20px_rgba(250,204,21,0.2)]"
+        className="group relative px-8 py-4 bg-slate-800 hover:bg-slate-700 rounded-xl border border-slate-600 transition-all hover:shadow-[0_0_20px_rgba(250,204,21,0.2)]"
       >
         <span className="text-xl font-bold text-white group-hover:text-yellow-400 transition-colors">开始训练</span>
         <div className="absolute inset-0 rounded-xl border-2 border-transparent group-hover:border-yellow-400/50 transition-all" />
@@ -33,28 +33,37 @@ const MainMenu = ({ onStart }: { onStart: () => void }) => (
   </div>
 );
 
-const GameOver = ({ score, streak, onRetry }: { score: number, streak: number, onRetry: () => void }) => (
+const GameOver = ({ score, streak, onRetry, onViewStats }: { score: number, streak: number, onRetry: () => void, onViewStats: () => void }) => (
   <div className="flex flex-col items-center justify-center h-full space-y-6 p-4 text-center animate-fade-in w-full max-w-2xl mx-auto">
-    <h2 className="text-4xl font-bold text-white">训练结束</h2>
+    <h2 className="text-3xl sm:text-4xl font-bold text-white">训练结束</h2>
     
-    <div className="flex gap-8 bg-slate-800/50 p-8 rounded-2xl border border-slate-700 backdrop-blur-md">
+    <div className="flex gap-4 sm:gap-8 bg-slate-800/50 p-6 sm:p-8 rounded-2xl border border-slate-700 backdrop-blur-md">
       <div className="text-center">
-        <div className="text-sm text-slate-400 uppercase tracking-widest">得分</div>
-        <div className="text-5xl font-black text-yellow-400 mt-2">{score}</div>
+        <div className="text-xs text-slate-400 uppercase tracking-widest">得分</div>
+        <div className="text-4xl sm:text-5xl font-black text-yellow-400 mt-2">{score}</div>
       </div>
       <div className="w-px bg-slate-700"></div>
       <div className="text-center">
-        <div className="text-sm text-slate-400 uppercase tracking-widest">最高连胜</div>
-        <div className="text-5xl font-black text-blue-400 mt-2">{streak}</div>
+        <div className="text-xs text-slate-400 uppercase tracking-widest">最高连胜</div>
+        <div className="text-4xl sm:text-5xl font-black text-blue-400 mt-2">{streak}</div>
       </div>
     </div>
 
-    <button 
-      onClick={(e) => { e.stopPropagation(); onRetry(); }}
-      className="px-8 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-full transition-transform active:scale-95 shadow-lg shadow-blue-900/50"
-    >
-      再玩一次
-    </button>
+    <div className="flex flex-col sm:flex-row gap-4 w-full max-w-xs sm:max-w-md justify-center">
+      <button 
+        onClick={(e) => { e.stopPropagation(); onRetry(); }}
+        className="flex-1 px-8 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-full transition-transform active:scale-95 shadow-lg shadow-blue-900/50"
+      >
+        再玩一次
+      </button>
+      
+      <button 
+        onClick={(e) => { e.stopPropagation(); onViewStats(); }}
+        className="flex-1 px-8 py-3 bg-slate-700 hover:bg-slate-600 text-white font-bold rounded-full transition-transform active:scale-95 border border-slate-600 lg:hidden"
+      >
+        查看数据详情
+      </button>
+    </div>
   </div>
 );
 
@@ -67,6 +76,7 @@ export default function App() {
   const [streak, setStreak] = useState(0);
   const [lives, setLives] = useState(3);
   const [bestStreak, setBestStreak] = useState(0);
+  const [showMobileStats, setShowMobileStats] = useState(false);
   
   // History State
   const [sessionHistory, setSessionHistory] = useState<HistoryEntry[]>([]);
@@ -115,6 +125,7 @@ export default function App() {
     setBestStreak(0);
     setSessionHistory([]); // Clear session history, but keep allTimeHistory
     setScreen('game');
+    setShowMobileStats(false);
     generateQuestion();
   };
 
@@ -252,51 +263,76 @@ export default function App() {
       <div className="flex-1 flex flex-col h-full relative z-10 overflow-hidden">
         {/* Header - Always visible in game */}
         {screen === 'game' && (
-          <header className="flex justify-between items-center p-4 bg-slate-900/50 backdrop-blur-sm border-b border-slate-800 shrink-0">
-            <div className="flex items-center space-x-4">
-              <div className="text-slate-400 font-bold text-sm tracking-wider">得分 <span className="text-white text-lg ml-1">{score}</span></div>
-              <div className="text-slate-400 font-bold text-sm tracking-wider">连胜 <span className="text-yellow-400 text-lg ml-1">{streak}🔥</span></div>
+          <header className="flex justify-between items-center p-3 sm:p-4 bg-slate-900/80 backdrop-blur-sm border-b border-slate-800 shrink-0 z-30">
+            <div className="flex items-center space-x-3 sm:space-x-4">
+              <div className="text-slate-400 font-bold text-xs sm:text-sm tracking-wider">
+                得分 <span className="text-white text-base sm:text-lg ml-0.5">{score}</span>
+              </div>
+              <div className="text-slate-400 font-bold text-xs sm:text-sm tracking-wider">
+                连胜 <span className="text-yellow-400 text-base sm:text-lg ml-0.5">{streak}🔥</span>
+              </div>
             </div>
-            <div className="flex items-center space-x-1">
-              {[1, 2, 3].map(i => (
-                <div key={i} className={`w-3 h-3 rounded-full ${i <= lives ? 'bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.6)]' : 'bg-slate-800'}`} />
-              ))}
+            
+            <div className="flex items-center gap-4">
+              <div className="flex items-center space-x-1">
+                {[1, 2, 3].map(i => (
+                  <div key={i} className={`w-2.5 h-2.5 rounded-full ${i <= lives ? 'bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.6)]' : 'bg-slate-800'}`} />
+                ))}
+              </div>
+
+              {/* Mobile Stats Toggle */}
+              <button 
+                onClick={() => setShowMobileStats(true)}
+                className="lg:hidden text-slate-400 hover:text-white p-1.5 rounded-lg hover:bg-slate-800 transition-colors"
+                aria-label="History"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </button>
             </div>
           </header>
         )}
 
         <main 
-          className={`flex-1 flex flex-col items-center overflow-y-auto p-4 w-full transition-colors ${showResult ? 'cursor-pointer hover:bg-white/5' : ''}`}
+          className={`flex-1 flex flex-col items-center p-2 sm:p-4 w-full transition-colors overflow-y-auto ${showResult ? 'cursor-pointer hover:bg-white/5' : ''}`}
           onClick={showResult ? handleSkip : undefined}
         >
           {screen === 'menu' && <MainMenu onStart={handleStart} />}
           
-          {screen === 'end' && <GameOver score={score} streak={bestStreak} onRetry={handleStart} />}
+          {screen === 'end' && (
+            <GameOver 
+              score={score} 
+              streak={bestStreak} 
+              onRetry={handleStart} 
+              onViewStats={() => setShowMobileStats(true)} 
+            />
+          )}
 
           {screen === 'game' && currentRecipe && (
-            <div className="flex-1 flex flex-col items-center animate-fade-in-up w-full max-w-md">
+            <div className="flex-1 flex flex-col items-center animate-fade-in-up w-full max-w-md justify-start pt-2 sm:pt-8">
               
               {/* Target Item Display */}
-              <div className="mt-4 mb-6 flex flex-col items-center">
-                <h3 className="text-slate-400 uppercase tracking-widest text-xs font-bold mb-4">合成目标</h3>
+              <div className="my-2 sm:my-4 flex flex-col items-center shrink-0">
+                <h3 className="text-slate-500 uppercase tracking-widest text-[10px] sm:text-xs font-bold mb-2">合成目标</h3>
                 <div className={`relative group transition-transform duration-500 ${isWrongAnimation ? 'animate-shake' : ''}`}>
                    <ItemCard 
                      item={COMPLETED_ITEMS[currentRecipe.result]} 
                      size="lg" 
                      selected={false}
                    />
-                   <div className="mt-4 text-2xl font-bold text-center bg-clip-text text-transparent bg-gradient-to-b from-white to-slate-400">
+                   <div className="mt-2 text-lg sm:text-2xl font-bold text-center bg-clip-text text-transparent bg-gradient-to-b from-white to-slate-400">
                      {COMPLETED_ITEMS[currentRecipe.result].name}
                    </div>
                 </div>
 
                 {/* Correct Answer Reveal */}
                 {showResult && isWrongAnimation && (
-                  <div className="mt-4 flex items-center gap-2 animate-fade-in bg-red-900/30 px-4 py-2 rounded-lg border border-red-500/30">
-                    <span className="text-red-300 text-xs font-bold mr-2">正确配方:</span>
+                  <div className="mt-2 flex items-center gap-2 animate-fade-in bg-red-900/30 px-3 py-1.5 rounded-lg border border-red-500/30">
+                    <span className="text-red-300 text-xs font-bold mr-1">正确配方:</span>
                     {currentRecipe.components.map((id, idx) => (
                       <div key={idx} className="flex items-center">
-                         <img src={ALL_ITEMS_MAP[id].image} className="w-6 h-6" alt="" />
+                         <img src={ALL_ITEMS_MAP[id].image} className="w-5 h-5" alt="" />
                          {idx === 0 && <span className="mx-1 text-slate-400">+</span>}
                       </div>
                     ))}
@@ -304,17 +340,14 @@ export default function App() {
                 )}
               </div>
 
-              {/* Coach Widget */}
-              <div className="w-full min-h-[100px] mb-4 flex justify-center px-4">
+              {/* Coach Widget - Compact */}
+              <div className="w-full min-h-[80px] flex justify-center px-2 shrink-0">
                 <CoachWidget feedback={feedback} loading={loadingFeedback} />
               </div>
 
               {/* Component Selection Grid */}
-              <div className="w-full">
-                <h3 className="text-center text-slate-500 text-xs uppercase tracking-widest font-bold mb-4">
-                  选择 2 个散件
-                </h3>
-                <div className="grid grid-cols-4 gap-3 sm:gap-4 justify-items-center p-4 bg-slate-800/30 rounded-3xl border border-slate-700/50 backdrop-blur-sm" onClick={(e) => e.stopPropagation()}>
+              <div className="w-full shrink-0">
+                <div className="grid grid-cols-4 gap-2 sm:gap-4 justify-items-center p-2 sm:p-4 bg-slate-800/30 rounded-2xl sm:rounded-3xl border border-slate-700/50 backdrop-blur-sm" onClick={(e) => e.stopPropagation()}>
                   {COMPONENTS.map(comp => {
                      // Count how many times this item is selected
                      const selectionCount = selectedComponents.filter(id => id === comp.id).length;
@@ -325,13 +358,13 @@ export default function App() {
                          <ItemCard 
                            item={comp} 
                            onClick={() => handleInventoryClick(comp.id)}
-                           selected={false} // Don't show "selected" ring in inventory, visualize in slots instead
+                           selected={false}
                            disabled={showResult || (isMaxSelected)}
                            size="md"
                          />
                          {/* Badge showing quantity currently selected */}
                          {selectionCount > 0 && (
-                           <div className="absolute -top-2 -right-2 bg-blue-500 text-white text-xs font-bold w-6 h-6 flex items-center justify-center rounded-full border-2 border-slate-900 shadow-md animate-bounce-sm">
+                           <div className="absolute -top-2 -right-2 bg-blue-500 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full border-2 border-slate-900 shadow-md animate-bounce-sm">
                              {selectionCount}
                            </div>
                          )}
@@ -342,7 +375,7 @@ export default function App() {
               </div>
               
               {/* Selection Preview / Slots */}
-              <div className="mt-8 flex items-center gap-4" onClick={(e) => e.stopPropagation()}>
+              <div className="mt-4 sm:mt-8 flex items-center gap-3 sm:gap-4 shrink-0" onClick={(e) => e.stopPropagation()}>
                   {[0, 1].map(index => {
                     const id = selectedComponents[index];
                     const item = id ? ALL_ITEMS_MAP[id] : null;
@@ -351,7 +384,7 @@ export default function App() {
                         key={index} 
                         onClick={() => item && handleSlotClick(index)}
                         disabled={showResult}
-                        className={`w-16 h-16 rounded-xl border-2 flex items-center justify-center transition-all duration-200 
+                        className={`w-14 h-14 sm:w-16 sm:h-16 rounded-xl border-2 flex items-center justify-center transition-all duration-200 
                           ${item 
                             ? 'border-yellow-400/50 bg-slate-800 shadow-[0_0_15px_rgba(250,204,21,0.15)]' 
                             : 'border-dashed border-slate-700 bg-slate-800/30'
@@ -380,24 +413,46 @@ export default function App() {
 
               {/* Skip/Next Hint */}
               {showResult && (
-                 <div className="mt-6 text-slate-500 text-xs animate-pulse flex items-center gap-2">
+                 <div className="mt-4 text-slate-500 text-xs animate-pulse flex items-center gap-2">
                     <span>即将进入下一题...</span>
                     <span className="text-slate-400">(点击任意处跳过)</span>
                  </div>
               )}
-
             </div>
           )}
         </main>
       </div>
 
-      {/* Right Panel: Stats (Visible on Large Screens or stacked on mobile) */}
+      {/* Desktop Stats Sidebar (Hidden on mobile, visible on lg) */}
       {(screen === 'game' || screen === 'end') && (
-        <div className="w-full lg:w-80 border-t lg:border-t-0 lg:border-l border-slate-700 shrink-0 lg:h-auto h-[300px] relative z-20">
+        <div className="hidden lg:flex w-80 border-l border-slate-700 shrink-0 relative z-20">
           <StatsPanel 
             sessionHistory={sessionHistory} 
             allTimeHistory={allTimeHistory} 
           />
+        </div>
+      )}
+
+      {/* Mobile Stats Modal (Overlay) */}
+      {showMobileStats && (
+        <div className="fixed inset-0 z-50 bg-slate-900 lg:hidden flex flex-col animate-fade-in">
+          <div className="p-4 border-b border-slate-700 flex justify-between items-center bg-slate-800 shadow-md shrink-0">
+            <h2 className="font-bold text-white text-lg">历史数据</h2>
+            <button 
+              onClick={() => setShowMobileStats(false)} 
+              className="p-2 bg-slate-700 rounded-full hover:bg-slate-600 text-slate-300"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          <div className="flex-1 overflow-hidden relative">
+            <StatsPanel 
+              sessionHistory={sessionHistory} 
+              allTimeHistory={allTimeHistory} 
+            />
+          </div>
         </div>
       )}
 
